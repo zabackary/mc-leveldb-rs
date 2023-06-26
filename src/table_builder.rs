@@ -25,6 +25,8 @@ pub const MAGIC_FOOTER_ENCODED: [u8; 8] = [0x57, 0xfb, 0x80, 0x8b, 0x24, 0x75, 0
 pub const TABLE_BLOCK_COMPRESS_LEN: usize = 1;
 pub const TABLE_BLOCK_CKSUM_LEN: usize = 4;
 
+pub const ZLIB_COMPRESSION_LEVEL: u8 = miniz_oxide::deflate::CompressionLevel::DefaultLevel as u8;
+
 /// Footer is a helper for encoding/decoding a table footer.
 #[derive(Debug, Clone)]
 pub struct Footer {
@@ -202,6 +204,10 @@ impl<Dst: Write> TableBuilder<Dst> {
         let mut data = block;
         if ctype == CompressionType::CompressionSnappy {
             data = snap::raw::Encoder::new().compress_vec(&data)?;
+        } else if ctype == CompressionType::CompressionZlib {
+            data = miniz_oxide::deflate::compress_to_vec_zlib(&data, ZLIB_COMPRESSION_LEVEL);
+        } else if ctype == CompressionType::CompressionZlibRaw {
+            data = miniz_oxide::deflate::compress_to_vec(&data, ZLIB_COMPRESSION_LEVEL);
         }
 
         let mut digest = crc32::Digest::new(crc32::CASTAGNOLI);

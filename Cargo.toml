@@ -21,6 +21,7 @@ errno = "0.2"
 fs2 = "0.4.3"
 
 tokio = { optional = true, features = ["rt", "sync"], version = ">= 1.21" }
+miniz_oxide = "0.7.1"
 
 [features]
 default = []
@@ -36,5 +37,10 @@ harness = false
 path = "src/benches/maps_bench.rs"
 
 [workspace]
-members = ["examples/write-a-lot", "examples/leveldb-tool", "examples/word-analyze",  "examples/stresstest", "examples/asyncdb"]
-
+members = [
+  "examples/write-a-lot",
+  "examples/leveldb-tool",
+  "examples/word-analyze",
+  "examples/stresstest",
+  "examples/asyncdb",
+]

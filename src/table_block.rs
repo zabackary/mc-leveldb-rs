@@ -7,6 +7,7 @@ use crate::filter_block::FilterBlockReader;
 use crate::log::unmask_crc;
 use crate::options::{self, CompressionType, Options};
 use crate::table_builder;
+use crate::Status;
 
 use crc::crc32::{self, Hasher32};
 use integer_encoding::FixedInt;
@@ -76,6 +77,28 @@ pub fn read_table_block(
             CompressionType::CompressionSnappy => {
                 let decoded = snap::raw::Decoder::new().decompress_vec(buf.as_slice())?;
                 Ok(Block::new(opt, decoded))
+            }
+            CompressionType::CompressionZlib => {
+                let decoded_result = miniz_oxide::inflate::decompress_to_vec_zlib(buf.as_slice());
+                if let Ok(decoded) = decoded_result {
+                    Ok(Block::new(opt, decoded))
+                } else {
+                    Err(Status {
+                        code: StatusCode::CompressionError,
+                        err: decoded_result.err().unwrap().to_string(),
+                    })
+                }
+            }
+            CompressionType::CompressionZlibRaw => {
+                let decoded_result = miniz_oxide::inflate::decompress_to_vec(buf.as_slice());
+                if let Ok(decoded) = decoded_result {
+                    Ok(Block::new(opt, decoded))
+                } else {
+                    Err(Status {
+                        code: StatusCode::CompressionError,
+                        err: decoded_result.err().unwrap().to_string(),
+                    })
+                }
             }
         }
     } else {

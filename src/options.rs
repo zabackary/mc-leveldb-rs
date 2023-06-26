@@ -23,12 +23,16 @@ const DEFAULT_BITS_PER_KEY: u32 = 10; // NOTE: This may need to be optimized.
 pub enum CompressionType {
     CompressionNone = 0,
     CompressionSnappy = 1,
+    CompressionZlib = 2,
+    CompressionZlibRaw = 4,
 }
 
 pub fn int_to_compressiontype(i: u32) -> Option<CompressionType> {
     match i {
         0 => Some(CompressionType::CompressionNone),
         1 => Some(CompressionType::CompressionSnappy),
+        2 => Some(CompressionType::CompressionZlib),
+        4 => Some(CompressionType::CompressionZlibRaw),
         _ => None,
     }
 }
