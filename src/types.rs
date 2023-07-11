@@ -140,18 +140,19 @@ pub enum FileType {
     InfoLog,
 }
 
-pub fn parse_file_name<P: AsRef<Path>>(ff: P) -> Result<(FileNum, FileType)> {
-    let f = ff.as_ref().to_str().unwrap();
+pub fn parse_file_name<P: AsRef<Path>>(ff: P) -> Result<Option<(FileNum, FileType)>> {
+    let path = ff.as_ref();
+    let f = path.to_str().unwrap();
     if f == "CURRENT" {
-        return Ok((0, FileType::Current));
+        return Ok(Some((0, FileType::Current)));
     } else if f == "LOCK" {
-        return Ok((0, FileType::DBLock));
+        return Ok(Some((0, FileType::DBLock)));
     } else if f == "LOG" || f == "LOG.old" {
-        return Ok((0, FileType::InfoLog));
+        return Ok(Some((0, FileType::InfoLog)));
     } else if f.starts_with("MANIFEST-") {
         if let Some(ix) = f.find('-') {
             if let Ok(num) = FileNum::from_str_radix(&f[ix + 1..], 10) {
-                return Ok((num, FileType::Descriptor));
+                return Ok(Some((num, FileType::Descriptor)));
             }
             return err(
                 StatusCode::InvalidArgument,
@@ -173,14 +174,21 @@ pub fn parse_file_name<P: AsRef<Path>>(ff: P) -> Result<(FileNum, FileType)> {
                     )
                 }
             };
-            return Ok((num, typ));
+            return Ok(Some((num, typ)));
         }
         return err(
             StatusCode::InvalidArgument,
             "invalid file number for table or temp file",
         );
     }
-    err(StatusCode::InvalidArgument, "unknown file type")
+    // Instead of failing on weird files:
+
+    // err(StatusCode::InvalidArgument, "unknown file type")
+
+    // We're going to just keep going
+    // No idea what this is doing here, but because some corrupted dbs seem
+    // to have random dirs lying around, just skip it.
+    return Ok(None);
 }
 
 #[cfg(test)]

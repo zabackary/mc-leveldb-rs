@@ -187,15 +187,20 @@ impl DB {
 
         for file in &filenames {
             match parse_file_name(&file) {
-                Ok((num, typ)) => {
-                    expected.remove(&num);
-                    if typ == FileType::Log
-                        && (num >= self.vset.borrow().log_num
-                            || num == self.vset.borrow().prev_log_num)
-                    {
-                        log_files.push(num);
+                Ok(option) => match option {
+                    Some((num, typ)) => {
+                        expected.remove(&num);
+                        if typ == FileType::Log
+                            && (num >= self.vset.borrow().log_num
+                                || num == self.vset.borrow().prev_log_num)
+                        {
+                            log_files.push(num);
+                        }
                     }
-                }
+                    None => {
+                        // Skip; see comment in `parse_file_name`
+                    }
+                },
                 Err(e) => return Err(e.annotate(format!("While parsing {:?}", file))),
             }
         }
@@ -304,7 +309,7 @@ impl DB {
         let files = self.vset.borrow().live_files();
         let filenames = self.opt.env.children(Path::new(&self.path))?;
         for name in filenames {
-            if let Ok((num, typ)) = parse_file_name(&name) {
+            if let Ok(Some((num, typ))) = parse_file_name(&name) {
                 match typ {
                     FileType::Log => {
                         if num >= self.vset.borrow().log_num {
@@ -889,10 +894,7 @@ impl DB {
         Ok(())
     }
 
-    fn finish_compaction_output(
-        &mut self,
-        cs: &mut CompactionState,
-    ) -> Result<()> {
+    fn finish_compaction_output(&mut self, cs: &mut CompactionState) -> Result<()> {
         assert!(cs.builder.is_some());
         let output_num = cs.current_output().num;
         assert!(output_num > 0);

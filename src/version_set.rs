@@ -671,7 +671,7 @@ impl VersionSet {
             return false;
         }
         // The original doesn't reuse manifests; we do.
-        if let Ok((num, typ)) = parse_file_name(current_manifest_base) {
+        if let Ok(Some((num, typ))) = parse_file_name(current_manifest_base) {
             if typ != FileType::Descriptor {
                 return false;
             }
