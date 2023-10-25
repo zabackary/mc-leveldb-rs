@@ -1,3 +1,13 @@
+# mc-leveldb-rs
+
+This was originally a fork that provided an implementation of LevelDB which could handle Mojang's modified format (which used ZLib instead for compression), but it's now obsolete. **`leveldb-rs` has now worked that support into the original repo (better than the way I did it), so that one is now perferable since it's actually maintained.**
+
+Basically, this fork is *deprecated*. I don't think anyone used it, so I don't think anyone cares.
+
+Original README from the original project follows.
+
+<hr>
+
 # leveldb-rs
 
 [![crates.io](https://img.shields.io/crates/v/rusty-leveldb.svg)](https://crates.io/crates/rusty-leveldb)
